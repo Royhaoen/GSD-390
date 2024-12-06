@@ -1,23 +1,15 @@
 using Platformer.Core;
 using Platformer.Model;
+using Platformer.Gameplay;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using static Platformer.Core.Simulation;
 
 namespace Platformer.Mechanics
 {
-    /// <summary>
-    /// This class exposes the the game model in the inspector, and ticks the
-    /// simulation.
-    /// </summary> 
     public class GameController : MonoBehaviour
     {
         public static GameController Instance { get; private set; }
-
-        //This model field is public and can be therefore be modified in the 
-        //inspector.
-        //The reference actually comes from the InstanceRegister, and is shared
-        //through the simulation and events. Unity will deserialize over this
-        //shared reference when the scene loads, allowing the model to be
-        //conveniently configured inside the inspector.
         public PlatformerModel model = Simulation.GetModel<PlatformerModel>();
 
         void OnEnable()
@@ -32,7 +24,30 @@ namespace Platformer.Mechanics
 
         void Update()
         {
-            if (Instance == this) Simulation.Tick();
+            if (Instance == this) 
+            {
+                // Debug teleport
+                if (Input.GetKeyDown(KeyCode.T))
+                {
+                    var victoryZone = FindObjectOfType<VictoryZone>();
+                    if (victoryZone != null && model.player != null)
+                    {
+                        Vector3 teleportPosition = victoryZone.transform.position;
+                        teleportPosition.x -= 2f;
+                        model.player.Teleport(teleportPosition);
+                    }
+                }
+
+                // Restart when dead OR when victory and R pressed
+                if (Input.GetKeyDown(KeyCode.R) && 
+                    ((model.player != null && !model.player.health.IsAlive) || 
+                     (model.player != null && !model.player.controlEnabled)))
+                {
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                }
+                
+                Simulation.Tick();
+            }
         }
     }
 }
