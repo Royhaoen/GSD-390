@@ -38,7 +38,14 @@ namespace Platformer.Mechanics
                     }
                 }
 
-                // Restart when dead OR when victory and R pressed
+                // Complete reset (delete best time) with Backspace
+                if (Input.GetKeyDown(KeyCode.Backspace))
+                {
+                    PlayerPrefs.DeleteKey("BestTime");
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                }
+
+                // Normal restart
                 if (Input.GetKeyDown(KeyCode.R) && 
                     ((model.player != null && !model.player.health.IsAlive) || 
                      (model.player != null && !model.player.controlEnabled)))
